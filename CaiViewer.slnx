@@ -1,0 +1,14 @@
+<Solution>
+  <Project Path="CaiViewer.Core/CaiViewer.Core.csproj" />
+  <Project Path="CaiViewer.Docs/CaiViewer.Docs.csproj" />
+  <Project Path="CaiViewer.Frontend/CaiViewer.Frontend.Android/CaiViewer.Frontend.Android.csproj" Id="4b9eacc7-2b0f-487d-8d68-58b944711ddb">
+    <Deploy />
+  </Project>
+  <Project Path="CaiViewer.Frontend/CaiViewer.Frontend.Browser/CaiViewer.Frontend.Browser.csproj" Id="48c3264c-a4b3-467f-8346-cc3dfc2d629e" />
+  <Project Path="CaiViewer.Frontend/CaiViewer.Frontend.Desktop/CaiViewer.Frontend.Desktop.csproj" Id="30085f61-4779-4102-919e-768de53e8084" />
+  <Project Path="CaiViewer.Frontend/CaiViewer.Frontend.iOS/CaiViewer.Frontend.iOS.csproj" Id="697d1a96-2797-4cb1-898a-0ba9ae95ef66">
+    <Deploy />
+  </Project>
+  <Project Path="CaiViewer.Frontend/CaiViewer.Frontend/CaiViewer.Frontend.csproj" Id="530ddb91-5130-4a13-b790-af919895baea" />
+  <Project Path="CaiViewer.Tests/CaiViewer.Tests.csproj" Id="857a51b9-3cde-41de-b2c9-ed783694d832" />
+</Solution>
