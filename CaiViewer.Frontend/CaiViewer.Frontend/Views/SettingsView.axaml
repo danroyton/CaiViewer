@@ -11,10 +11,12 @@
 
 	  <!-- Database -->
 	  <TextBlock Text="Database" FontWeight="SemiBold" Margin="0,8,0,0" />
-	  <Grid ColumnDefinitions="*,Auto">
+	  <Grid ColumnDefinitions="*,Auto,Auto">
 		<TextBox Grid.Column="0" Text="{Binding DatabasePath}"
 				 Watermark="Path to cai.db SQLite database…" />
 		<Button Grid.Column="1" Content="Browse…" Command="{Binding BrowseDatabaseCommand}" Margin="4,0,0,0" />
+		<Button Grid.Column="2" Content="🆕 Create…" Command="{Binding CreateDatabaseCommand}" Margin="4,0,0,0"
+				ToolTip.Tip="Choose a folder and create a new cai.db there" />
 	  </Grid>
 
 	  <!-- Repo path -->

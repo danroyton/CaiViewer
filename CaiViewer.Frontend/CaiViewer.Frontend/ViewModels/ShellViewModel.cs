@@ -27,6 +27,8 @@ public partial class ShellViewModel : ViewModelBase
 
     public AppSettings AppSettings { get; }
     public ObservableCollection<string> ProfileNames { get; } = [];
+    // Spec 8: display name + full path
+    public ObservableCollection<string> ProfileDisplayNames { get; } = [];
 
     public ShellViewModel()
     {
@@ -51,11 +53,19 @@ public partial class ShellViewModel : ViewModelBase
     private void RefreshProfileNames()
     {
         ProfileNames.Clear();
+        ProfileDisplayNames.Clear();
         foreach (var p in AppSettings.Profiles)
+        {
             ProfileNames.Add(p.Name);
+            var display = string.IsNullOrEmpty(p.DatabasePath)
+                ? p.Name
+                : $"{p.Name}  ({p.DatabasePath})";
+            ProfileDisplayNames.Add(display);
+        }
         if (ProfileNames.Count == 0)
         {
             ProfileNames.Add(AppSettings.ActiveProfileName);
+            ProfileDisplayNames.Add(AppSettings.ActiveProfileName);
         }
     }
 
@@ -66,6 +76,7 @@ public partial class ShellViewModel : ViewModelBase
         AppSettings.Save();
         Browse.RefreshSettings(AppSettings);
         Import.RefreshSettings(AppSettings);
+        // Spec 8: auto-reload browse when profile switches
         _ = Browse.RefreshCommand.ExecuteAsync(null);
     }
 

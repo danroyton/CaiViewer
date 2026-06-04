@@ -41,6 +41,25 @@ public partial class SettingsViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private async Task CreateDatabaseAsync()
+    {
+        var folder = await PickFolderAsync("Select folder to create cai.db in");
+        if (folder is null) return;
+        var dbPath = Path.Combine(folder, "cai.db");
+        try
+        {
+            var db = new CaiViewer.Core.Database.CaiDbContext(dbPath);
+            await db.EnsureCreatedAsync();
+            DatabasePath = dbPath;
+        }
+        catch (Exception ex)
+        {
+            // Surface error without crashing – the text box will show the path
+            DatabasePath = $"Error: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
     private async Task BrowseCivitAiRepoAsync()
     {
         var path = await PickFolderAsync("Select CivitAI repo root");

@@ -48,6 +48,7 @@ public partial class BrowseViewModel : ViewModelBase
     // Filter state
     [ObservableProperty] private string? _filterType;
     [ObservableProperty] private string? _filterBaseModel;
+    [ObservableProperty] private string? _filterCreator;
     [ObservableProperty] private int _maxNsfwLevel = 31;
     [ObservableProperty] private bool? _hasZipFilter;
     [ObservableProperty] private string _sortOption = "NameAsc";
@@ -77,6 +78,7 @@ public partial class BrowseViewModel : ViewModelBase
     partial void OnSearchTextChanged(string value) => _ = DebounceSearchAsync();
     partial void OnFilterTypeChanged(string? value) => _ = ExecuteSearchAsync();
     partial void OnFilterBaseModelChanged(string? value) => _ = ExecuteSearchAsync();
+    partial void OnFilterCreatorChanged(string? value) => _ = ExecuteSearchAsync();
     partial void OnMaxNsfwLevelChanged(int value) => _ = ExecuteSearchAsync();
     partial void OnHasZipFilterChanged(bool? value) => _ = ExecuteSearchAsync();
     partial void OnSortOptionChanged(string value) => _ = ExecuteSearchAsync();
@@ -127,6 +129,13 @@ public partial class BrowseViewModel : ViewModelBase
     private async Task RemoveTagAsync(string tag)
     {
         ActiveTags.Remove(tag);
+        await ExecuteSearchAsync();
+    }
+
+    [RelayCommand]
+    private async Task ClearCreatorFilterAsync()
+    {
+        FilterCreator = null;
         await ExecuteSearchAsync();
     }
 
@@ -184,6 +193,7 @@ public partial class BrowseViewModel : ViewModelBase
                 FullText = string.IsNullOrWhiteSpace(SearchText) ? null : SearchText,
                 Types = FilterType is null ? null : [FilterType],
                 BaseModels = FilterBaseModel is null ? null : [FilterBaseModel],
+                CreatorUsername = string.IsNullOrWhiteSpace(FilterCreator) ? null : FilterCreator,
                 MaxNsfwLevel = MaxNsfwLevel < 31 ? MaxNsfwLevel : null,
                 HasZip = HasZipFilter,
                 Tags = ActiveTags.Count > 0 ? [.. ActiveTags] : null,

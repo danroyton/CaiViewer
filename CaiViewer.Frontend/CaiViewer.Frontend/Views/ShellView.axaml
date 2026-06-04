@@ -10,15 +10,16 @@
 	<!-- ── Main shell ────────────────────────────────────────── -->
 	<DockPanel>
 
-	  <!-- Profile selector bar (issue 3) -->
+	  <!-- Profile selector bar (spec 8) -->
 	  <Border DockPanel.Dock="Top" Background="#1A1A2E" Padding="8,4">
 		<StackPanel Orientation="Horizontal" Spacing="10">
 		  <TextBlock Text="Repository:" VerticalAlignment="Center" Foreground="#AAAAAA" FontSize="12" />
 		  <ComboBox ItemsSource="{Binding ProfileNames}"
 					SelectedItem="{Binding SelectedProfileName}"
 					MinWidth="160" FontSize="12" />
+		  <!-- Spec 8: show full DB path -->
 		  <TextBlock Text="{Binding AppSettings.DatabasePath}" VerticalAlignment="Center"
-					 FontSize="11" Foreground="#666666" />
+					 FontSize="11" Foreground="#888888" MaxWidth="600" TextTrimming="CharacterEllipsis" />
 		</StackPanel>
 	  </Border>
 
