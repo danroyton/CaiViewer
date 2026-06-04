@@ -15,6 +15,7 @@ public partial class ModelVersionTabViewModel : ViewModelBase
     public int CivitaiVersionId { get; init; }
     public string Name { get; init; } = string.Empty;
     public string? BaseModel { get; init; }
+    public string? BaseModelType { get; init; }
     public string? PublishedAt { get; init; }
     public string? Status { get; init; }
     public string? Availability { get; init; }
@@ -54,6 +55,12 @@ public partial class ModelVersionFileRowViewModel : ViewModelBase
     public string? HashAutov3 { get; init; }
     public string? PickleScan { get; init; }
     public string? VirusScan { get; init; }
+    public string? LocalPath { get; init; }
+
+    /// <summary>true = file physically exists on disk</summary>
+    public bool IsLocallyPresent => !string.IsNullOrEmpty(LocalPath) && File.Exists(LocalPath);
+
+    public string LocalPresenceIcon => IsLocallyPresent ? "✅" : "❌";
 
     [RelayCommand]
     private void CopyAutov2() => _ = CopyToClipboardAsync(HashAutov2 ?? string.Empty);
@@ -97,6 +104,8 @@ public partial class ModelDetailViewModel : ViewModelBase
     public string Tags { get; init; } = string.Empty;
     public ObservableCollection<string> TagList { get; } = [];
     public string CivitAiUrl { get; init; } = string.Empty;
+    public string HuggingFaceUrl { get; init; } = string.Empty;
+    public string CreativityUrl { get; init; } = string.Empty;
 
     public ObservableCollection<ModelVersionTabViewModel> Versions { get; } = [];
 
@@ -130,7 +139,9 @@ public partial class ModelDetailViewModel : ViewModelBase
                 Description = HtmlHelper.ToPlainText(model.Description),
                 Tags = string.Join(", ", tags),
                 // Issue 7: link only to model page, no version ID
-                CivitAiUrl = $"https://civitai.com/models/{modelId}"
+                CivitAiUrl = $"https://civitai.com/models/{modelId}",
+                HuggingFaceUrl = $"https://huggingface.co/models?search={Uri.EscapeDataString(model.Name)}",
+                CreativityUrl = $"https://www.creativity.ai/search?q={Uri.EscapeDataString(model.Name)}"
             };
 
             foreach (var tag in tags) vm.TagList.Add(tag);
@@ -179,6 +190,7 @@ public partial class ModelDetailViewModel : ViewModelBase
                     CivitaiVersionId = v.CivitaiVersionId,
                     Name = v.Name,
                     BaseModel = v.BaseModel,
+                    BaseModelType = v.BaseModelType,
                     PublishedAt = v.PublishedAt?.ToString("yyyy-MM-dd"),
                     Status = v.Status,
                     Availability = v.Availability,
@@ -207,7 +219,8 @@ public partial class ModelDetailViewModel : ViewModelBase
                         HashAutov2 = f.HashAutov2,
                         HashAutov3 = f.HashAutov3,
                         PickleScan = f.PickleScanResult,
-                        VirusScan = f.VirusScanResult
+                        VirusScan = f.VirusScanResult,
+                        LocalPath = f.LocalPath
                     });
                 }
 
@@ -254,6 +267,20 @@ public partial class ModelDetailViewModel : ViewModelBase
         // Issue 7: always link to model page only (no modelVersionId param)
         var url = CivitAiUrl;
         try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true }); }
+        catch { }
+    }
+
+    [RelayCommand]
+    private void OpenOnHuggingFace()
+    {
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(HuggingFaceUrl) { UseShellExecute = true }); }
+        catch { }
+    }
+
+    [RelayCommand]
+    private void OpenOnCreativity()
+    {
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(CreativityUrl) { UseShellExecute = true }); }
         catch { }
     }
 

@@ -9,6 +9,11 @@ using CaiViewer.Core.Search;
 
 namespace CaiViewer.Frontend.ViewModels;
 
+public record SortItem(string Label, string Value)
+{
+    public override string ToString() => Label;
+}
+
 public partial class ModelVersionRowViewModel : ViewModelBase
 {
     public int ModelVersionId { get; init; }
@@ -51,11 +56,33 @@ public partial class BrowseViewModel : ViewModelBase
     [ObservableProperty] private string? _filterCreator;
     [ObservableProperty] private int _maxNsfwLevel = 31;
     [ObservableProperty] private bool? _hasZipFilter;
-    [ObservableProperty] private string _sortOption = "NameAsc";
+    [ObservableProperty] private SortItem _selectedSortItem = SortItems_[0];
+
+    // Sort option string kept for query building
+    private string SortOption => SelectedSortItem.Value;
+
+    public static readonly SortItem[] SortItems_ = [
+        new("Name A-Z",        "NameAsc"),
+        new("Name Z-A",        "NameDesc"),
+        new("Newest first",    "NewestFirst"),
+        new("Oldest first",    "OldestFirst"),
+        new("Most downloaded", "MostDownloaded"),
+        new("Highest rated",   "HighestRated"),
+        new("NSFW level",      "NsfwLevelAsc"),
+    ];
+
+    public SortItem[] AvailableSortItems => SortItems_;
 
     // Tag filter
     [ObservableProperty] private string _tagInput = string.Empty;
     public ObservableCollection<string> ActiveTags { get; } = [];
+
+    // Spec 8: PageSizeText for two-way text binding
+    public string PageSizeText
+    {
+        get => PageSize.ToString();
+        set { if (int.TryParse(value, out var v) && v > 0) PageSize = v; }
+    }
 
     public int TotalPages => TotalCount == 0 ? 1 : (int)Math.Ceiling(TotalCount / (double)PageSize);
 
@@ -81,11 +108,17 @@ public partial class BrowseViewModel : ViewModelBase
     partial void OnFilterCreatorChanged(string? value) => _ = ExecuteSearchAsync();
     partial void OnMaxNsfwLevelChanged(int value) => _ = ExecuteSearchAsync();
     partial void OnHasZipFilterChanged(bool? value) => _ = ExecuteSearchAsync();
-    partial void OnSortOptionChanged(string value) => _ = ExecuteSearchAsync();
+    partial void OnSelectedSortItemChanged(SortItem value) => _ = ExecuteSearchAsync();
     partial void OnPageSizeChanged(int value) => _ = ExecuteSearchAsync();
 
     [RelayCommand]
     private async Task RefreshAsync() => await ExecuteSearchAsync();
+
+    [RelayCommand]
+    private void IncrementPageSize() { PageSize = Math.Min(PageSize + 10, 500); OnPropertyChanged(nameof(PageSizeText)); }
+
+    [RelayCommand]
+    private void DecrementPageSize() { PageSize = Math.Max(PageSize - 10, 10); OnPropertyChanged(nameof(PageSizeText)); }
 
     [RelayCommand]
     private async Task NextPageAsync()

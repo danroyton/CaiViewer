@@ -1,278 +1,341 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:CaiViewer.Frontend.ViewModels"
-             x:Class="CaiViewer.Frontend.Views.BrowseView"
-             x:DataType="vm:BrowseViewModel">
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:vm="using:CaiViewer.Frontend.ViewModels"
+			 x:Class="CaiViewer.Frontend.Views.BrowseView"
+			 x:DataType="vm:BrowseViewModel">
 
   <DockPanel>
 
-    <!-- Top toolbar -->
-    <StackPanel DockPanel.Dock="Top" Margin="8,4">
-      <WrapPanel Orientation="Horizontal">
-        <TextBox Text="{Binding SearchText}" Watermark="Search..." Width="220" Margin="0,0,6,2" />
-        <StackPanel Orientation="Horizontal" Spacing="2" Margin="0,0,4,2">
-          <ComboBox SelectedItem="{Binding FilterType}" ItemsSource="{Binding AvailableTypes}" PlaceholderText="All types" MinWidth="110" FontSize="11" />
-          <Button Content="X" ToolTip.Tip="Clear type filter" Command="{Binding ClearTypeFilterCommand}" Padding="3,0" FontSize="10" />
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Spacing="2" Margin="0,0,4,2">
-          <ComboBox SelectedItem="{Binding FilterBaseModel}" ItemsSource="{Binding AvailableBaseModels}" PlaceholderText="All base models" MinWidth="120" FontSize="11" />
-          <Button Content="X" ToolTip.Tip="Clear base model filter" Command="{Binding ClearBaseModelFilterCommand}" Padding="3,0" FontSize="10" />
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Spacing="2" Margin="0,0,4,2">
-          <TextBox Text="{Binding FilterCreator}" Watermark="Creator..." Width="110" FontSize="11" />
-          <Button Content="X" ToolTip.Tip="Clear creator filter" Command="{Binding ClearCreatorFilterCommand}" Padding="3,0" FontSize="10" />
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Spacing="3" Margin="0,0,4,2">
-          <TextBlock Text="Tags:" VerticalAlignment="Center" FontSize="11" />
-          <TextBox Text="{Binding TagInput}" Watermark="tag + Enter" Width="110" FontSize="11" KeyDown="OnTagInputKeyDown" />
-          <Button Content="+" Command="{Binding AddTagCommand}" FontSize="11" Padding="5,0" />
-          <ItemsControl ItemsSource="{Binding ActiveTags}">
-            <ItemsControl.ItemsPanel>
-              <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="3" /></ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="x:String">
-                <Border Background="#336699" CornerRadius="8" Padding="5,1" Margin="1,0">
-                  <StackPanel Orientation="Horizontal" Spacing="3">
-                    <TextBlock Text="{Binding}" Foreground="White" FontSize="10" VerticalAlignment="Center" />
-                    <Button Content="x" CommandParameter="{Binding}" Command="{Binding $parent[UserControl].DataContext.RemoveTagCommand}" Padding="1,0" FontSize="9" Background="Transparent" Foreground="White" />
-                  </StackPanel>
-                </Border>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,6,2">
-          <TextBlock Text="Per page:" VerticalAlignment="Center" FontSize="11" />
-          <NumericUpDown Value="{Binding PageSize}" Minimum="10" Maximum="500" Increment="10" Width="75" FontSize="11" />
-        </StackPanel>
-        <ComboBox SelectedItem="{Binding SortOption}" MinWidth="130" FontSize="11" Margin="0,0,6,2">
-          <ComboBoxItem Content="Name A-Z" Tag="NameAsc" />
-          <ComboBoxItem Content="Name Z-A" Tag="NameDesc" />
-          <ComboBoxItem Content="Newest first" Tag="NewestFirst" />
-          <ComboBoxItem Content="Oldest first" Tag="OldestFirst" />
-          <ComboBoxItem Content="Most downloaded" Tag="MostDownloaded" />
-          <ComboBoxItem Content="Highest rated" Tag="HighestRated" />
-          <ComboBoxItem Content="NSFW level" Tag="NsfwLevelAsc" />
-        </ComboBox>
-        <Button Content="Refresh" Command="{Binding RefreshCommand}" Margin="0,0,0,2" />
-      </WrapPanel>
-    </StackPanel>
+	<!-- Top toolbar row 1: all filters -->
+	<StackPanel DockPanel.Dock="Top" Margin="8,4,8,0">
+	  <WrapPanel Orientation="Horizontal" ItemSpacing="4">
+		<!-- Search -->
+		<TextBox Text="{Binding SearchText}" Watermark="Search..." Width="200" FontSize="11" />
+		<!-- Type -->
+		<StackPanel Orientation="Horizontal" Spacing="2">
+		  <ComboBox SelectedItem="{Binding FilterType}" ItemsSource="{Binding AvailableTypes}"
+					PlaceholderText="All types" MinWidth="110" FontSize="11" />
+		  <Button Content="✕" ToolTip.Tip="Clear type" Command="{Binding ClearTypeFilterCommand}"
+				  Padding="4,0" FontSize="10" />
+		</StackPanel>
+		<!-- Base model -->
+		<StackPanel Orientation="Horizontal" Spacing="2">
+		  <ComboBox SelectedItem="{Binding FilterBaseModel}" ItemsSource="{Binding AvailableBaseModels}"
+					PlaceholderText="All base models" MinWidth="115" FontSize="11" />
+		  <Button Content="✕" ToolTip.Tip="Clear base model" Command="{Binding ClearBaseModelFilterCommand}"
+				  Padding="4,0" FontSize="10" />
+		</StackPanel>
+		<!-- Creator -->
+		<StackPanel Orientation="Horizontal" Spacing="2">
+		  <TextBox Text="{Binding FilterCreator}" Watermark="Creator..." Width="100" FontSize="11" />
+		  <Button Content="✕" ToolTip.Tip="Clear creator" Command="{Binding ClearCreatorFilterCommand}"
+				  Padding="4,0" FontSize="10" />
+		</StackPanel>
+		<!-- Tag input -->
+		<StackPanel Orientation="Horizontal" Spacing="2">
+		  <TextBox Text="{Binding TagInput}" Watermark="tag + Enter" Width="100" FontSize="11" KeyDown="OnTagInputKeyDown" />
+		  <Button Content="+" Command="{Binding AddTagCommand}" FontSize="11" Padding="6,0" />
+		</StackPanel>
+		<!-- Per page: TextBox + +/- buttons to avoid overlap -->
+		<StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+		  <TextBlock Text="Per page:" FontSize="11" VerticalAlignment="Center" />
+		  <Button Content="−" FontSize="11" Padding="5,0"
+				  Command="{Binding DecrementPageSizeCommand}" />
+		  <TextBox Text="{Binding PageSizeText}" Width="42" FontSize="11"
+				   TextAlignment="Center" VerticalAlignment="Center" />
+		  <Button Content="+" FontSize="11" Padding="5,0"
+				  Command="{Binding IncrementPageSizeCommand}" />
+		</StackPanel>
+		<!-- Sort -->
+		<ComboBox ItemsSource="{Binding AvailableSortItems}"
+				  SelectedItem="{Binding SelectedSortItem}"
+				  MinWidth="130" FontSize="11" />
+		<!-- Refresh -->
+		<Button Content="↺ Refresh" Command="{Binding RefreshCommand}" FontSize="11" />
+	  </WrapPanel>
 
-    <!-- Status bar -->
-    <Border DockPanel.Dock="Bottom" Background="#1E1E1E" Padding="8,3">
-      <TextBlock Text="{Binding StatusText}" FontSize="11" Foreground="#AAAAAA" />
-    </Border>
+	  <!-- Row 2: active tag chips -->
+	  <ItemsControl ItemsSource="{Binding ActiveTags}" Margin="0,3,0,0"
+					IsVisible="{Binding ActiveTags.Count, Converter={x:Static ObjectConverters.IsNotNull}}">
+		<ItemsControl.ItemsPanel>
+		  <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+		</ItemsControl.ItemsPanel>
+		<ItemsControl.ItemTemplate>
+		  <DataTemplate x:DataType="x:String">
+			<Border Background="#336699" CornerRadius="8" Padding="6,2" Margin="2,1">
+			  <StackPanel Orientation="Horizontal" Spacing="3">
+				<TextBlock Text="{Binding}" Foreground="White" FontSize="10" VerticalAlignment="Center" />
+				<Button Content="✕" CommandParameter="{Binding}"
+						Command="{Binding $parent[UserControl].DataContext.RemoveTagCommand}"
+						Padding="2,0" FontSize="9" Background="Transparent" Foreground="White" />
+			  </StackPanel>
+			</Border>
+		  </DataTemplate>
+		</ItemsControl.ItemTemplate>
+	  </ItemsControl>
+	</StackPanel>
 
-    <!-- Pagination -->
-    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="6" Margin="8,2" HorizontalAlignment="Center">
-      <Button Content="&lt;&lt;" Command="{Binding PreviousTenPagesCommand}" ToolTip.Tip="-10 pages" />
-      <Button Content="&lt;"  Command="{Binding PreviousPageCommand}" />
-      <TextBlock VerticalAlignment="Center" Text="{Binding CurrentPage, StringFormat='Page {0}'}" />
-      <TextBlock VerticalAlignment="Center" Text="{Binding TotalPages, StringFormat='of {0}'}" />
-      <TextBlock VerticalAlignment="Center" Text="{Binding TotalCount, StringFormat='({0} hits)'}" />
-      <Button Content="&gt;"  Command="{Binding NextPageCommand}" />
-      <Button Content="&gt;&gt;" Command="{Binding NextTenPagesCommand}" ToolTip.Tip="+10 pages" />
-    </StackPanel>
+	<!-- Status bar -->
+	<Border DockPanel.Dock="Bottom" Background="#1E1E1E" Padding="8,3">
+	  <TextBlock Text="{Binding StatusText}" FontSize="11" Foreground="#AAAAAA" />
+	</Border>
 
-    <!-- Loading indicator -->
-    <ProgressBar DockPanel.Dock="Top" IsIndeterminate="True" IsVisible="{Binding IsLoading}" Height="3" />
+	<!-- Pagination -->
+	<StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="6" Margin="8,2"
+				HorizontalAlignment="Center">
+	  <Button Content="«" Command="{Binding PreviousTenPagesCommand}" ToolTip.Tip="-10 pages" />
+	  <Button Content="‹" Command="{Binding PreviousPageCommand}" />
+	  <TextBlock VerticalAlignment="Center" Text="{Binding CurrentPage, StringFormat='Page {0}'}" />
+	  <TextBlock VerticalAlignment="Center" Text="{Binding TotalPages, StringFormat='of {0}'}" />
+	  <TextBlock VerticalAlignment="Center" Text="{Binding TotalCount, StringFormat='({0} hits)'}" />
+	  <Button Content="›" Command="{Binding NextPageCommand}" />
+	  <Button Content="»" Command="{Binding NextTenPagesCommand}" ToolTip.Tip="+10 pages" />
+	</StackPanel>
 
-    <!-- Main split: results list | detail -->
-    <Grid ColumnDefinitions="Auto,4,*">
+	<!-- Loading indicator -->
+	<ProgressBar DockPanel.Dock="Top" IsIndeterminate="True" IsVisible="{Binding IsLoading}" Height="3" />
 
-      <!-- Results list -->
-      <ListBox Grid.Column="0" MinWidth="240"
-               ItemsSource="{Binding Results}"
-               SelectedItem="{Binding SelectedRow}"
-               ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-        <ListBox.ItemTemplate>
-          <DataTemplate x:DataType="vm:ModelVersionRowViewModel">
-            <Grid ColumnDefinitions="Auto,*,Auto" Margin="2">
-              <ToolTip.Tip>
-                <ItemsControl ItemsSource="{Binding PreviewImages}">
-                  <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
-                  </ItemsControl.ItemsPanel>
-                  <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                      <Image Source="{Binding}" Width="392" Height="392" Stretch="Uniform" />
-                    </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-                </ItemsControl>
-              </ToolTip.Tip>
-              <Panel Grid.Column="0" Width="196" Height="196">
-                <Border Background="#2A2A2A" CornerRadius="3" />
-                <ItemsControl ItemsSource="{Binding PreviewImages}">
-                  <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
-                  </ItemsControl.ItemsPanel>
-                  <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                      <Image Source="{Binding}" Width="196" Height="196" Stretch="UniformToFill" />
-                    </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-                </ItemsControl>
-              </Panel>
-              <StackPanel Grid.Column="1" Spacing="1" Margin="6,0,0,0" VerticalAlignment="Center">
-                <TextBlock Text="{Binding ModelName}" FontWeight="SemiBold" TextWrapping="Wrap" />
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                  <Border Background="#336699" CornerRadius="3" Padding="3,1">
-                    <TextBlock Text="{Binding ModelType}" FontSize="10" Foreground="White" />
-                  </Border>
-                  <TextBlock Text="{Binding BaseModel}" FontSize="11" Foreground="#888888" />
-                </StackPanel>
-                <TextBlock Text="{Binding VersionName}" FontSize="11" Foreground="#AAAAAA" />
-                <TextBlock Text="{Binding CreatorUsername}" FontSize="10" Foreground="#666666" />
-              </StackPanel>
-              <StackPanel Grid.Column="2" Spacing="2" VerticalAlignment="Center">
-                <TextBlock Text="{Binding NsfwLevel, StringFormat='NSFW {0}'}" FontSize="10" IsVisible="{Binding NsfwLevel, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                <TextBlock Text="ZIP" FontSize="11" IsVisible="{Binding HasZip}" ToolTip.Tip="{Binding PrimaryZipPath}" />
-                <TextBlock Text="{Binding StatRating, StringFormat='* {0:F1}'}" FontSize="11" IsVisible="{Binding StatRating, Converter={x:Static ObjectConverters.IsNotNull}}" />
-              </StackPanel>
-            </Grid>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
+	<!-- Main split: results list | detail -->
+	<Grid ColumnDefinitions="Auto,4,*">
 
-      <!-- Draggable splitter -->
-      <GridSplitter Grid.Column="1" ResizeDirection="Columns" Background="#333333" Width="4" />
+	  <!-- Results list -->
+	  <ListBox Grid.Column="0" MinWidth="240"
+			   ItemsSource="{Binding Results}"
+			   SelectedItem="{Binding SelectedRow}"
+			   ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+		<ListBox.ItemTemplate>
+		  <DataTemplate x:DataType="vm:ModelVersionRowViewModel">
+			  <!-- Row content: preview strip (196×196 per image) + metadata -->
+			  <Grid ColumnDefinitions="196,*,Auto" Margin="2">
+				<!-- Hover tooltip: 3 images at 392px wide each, 392px high -->
+				<ToolTip.Tip>
+				  <ItemsControl ItemsSource="{Binding PreviewImages}">
+					<ItemsControl.ItemsPanel>
+					  <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+					<ItemsControl.ItemTemplate>
+					  <DataTemplate>
+						<Image Source="{Binding}" Width="1200" Height="600" Stretch="Uniform" />
+					  </DataTemplate>
+					</ItemsControl.ItemTemplate>
+				  </ItemsControl>
+				</ToolTip.Tip>
+			  <!-- Preview strip: up to 3 × 196px wide, 196px high -->
+			  <Panel Grid.Column="0" Width="196" Height="196">
+				<Border Background="#2A2A2A" CornerRadius="3" />
+				<ItemsControl ItemsSource="{Binding PreviewImages}">
+				  <ItemsControl.ItemsPanel>
+					<ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+				  </ItemsControl.ItemsPanel>
+				  <ItemsControl.ItemTemplate>
+					<DataTemplate>
+					  <Image Source="{Binding}" Width="196" Height="196" Stretch="UniformToFill" />
+					</DataTemplate>
+				  </ItemsControl.ItemTemplate>
+				</ItemsControl>
+			  </Panel>
+			  <!-- Metadata -->
+			  <StackPanel Grid.Column="1" Spacing="1" Margin="6,0,0,0" VerticalAlignment="Center">
+				<TextBlock Text="{Binding ModelName}" FontWeight="SemiBold" TextWrapping="Wrap" />
+				<StackPanel Orientation="Horizontal" Spacing="6">
+				  <Border Background="#336699" CornerRadius="3" Padding="3,1">
+					<TextBlock Text="{Binding ModelType}" FontSize="10" Foreground="White" />
+				  </Border>
+				  <TextBlock Text="{Binding BaseModel}" FontSize="11" Foreground="#888888" />
+				</StackPanel>
+				<TextBlock Text="{Binding VersionName}" FontSize="11" Foreground="#AAAAAA" />
+				<!-- Spec 3: creator only if set -->
+				<TextBlock Text="{Binding CreatorUsername}"
+						   FontSize="10" Foreground="#666666"
+						   IsVisible="{Binding CreatorUsername, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+			  </StackPanel>
+			  <StackPanel Grid.Column="2" Spacing="2" VerticalAlignment="Center">
+				<TextBlock Text="{Binding NsfwLevel, StringFormat='NSFW {0}'}" FontSize="10"
+						   IsVisible="{Binding NsfwLevel, Converter={x:Static ObjectConverters.IsNotNull}}" />
+				<TextBlock Text="ZIP" FontSize="11" IsVisible="{Binding HasZip}"
+						   ToolTip.Tip="{Binding PrimaryZipPath}" />
+			  </StackPanel>
+			</Grid>
+		  </DataTemplate>
+		</ListBox.ItemTemplate>
+	  </ListBox>
 
-      <!-- Detail panel - fully scrollable -->
-      <ScrollViewer Grid.Column="2" Margin="4">
-        <ContentControl Content="{Binding SelectedDetail}">
-          <ContentControl.ContentTemplate>
-            <DataTemplate x:DataType="vm:ModelDetailViewModel">
-              <StackPanel Spacing="10" Margin="8">
+	  <!-- Draggable splitter -->
+	  <GridSplitter Grid.Column="1" ResizeDirection="Columns" Background="#333333" Width="4" />
 
-                <!-- Header: name + type + creator + buttons on same line -->
-                <Grid ColumnDefinitions="*,Auto">
-                  <StackPanel Grid.Column="0" Spacing="2">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                      <TextBlock Text="{Binding ModelName}" FontSize="18" FontWeight="Bold" TextWrapping="Wrap" VerticalAlignment="Center" />
-                      <Border Background="#336699" CornerRadius="4" Padding="5,2" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding ModelType}" Foreground="White" FontSize="11" />
-                      </Border>
-                      <TextBlock Text="{Binding CreatorUsername, StringFormat='by {0}'}" Foreground="#888888" FontSize="11" VerticalAlignment="Center" />
-                    </StackPanel>
-                  </StackPanel>
-                  <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                    <Button Content="CivitAI" Command="{Binding OpenOnCivitAiCommand}" FontSize="11" Padding="5,2" />
-                    <Button Content="Copy ID" Command="{Binding CopyModelIdCommand}"   FontSize="11" Padding="5,2" />
-                    <Button Content="ZIP folder" Command="{Binding OpenZipFolderCommand}" FontSize="11" Padding="5,2" />
-                  </StackPanel>
-                </Grid>
+	  <!-- Detail panel - fully scrollable -->
+	  <ScrollViewer Grid.Column="2" Margin="4">
+		<ContentControl Content="{Binding SelectedDetail}">
+		  <ContentControl.ContentTemplate>
+			<DataTemplate x:DataType="vm:ModelDetailViewModel">
+			  <StackPanel Spacing="10" Margin="8">
 
-                <!-- Base model before tags -->
-                <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding SelectedVersion, Converter={x:Static ObjectConverters.IsNotNull}}">
-                  <TextBlock Text="Base model:" FontSize="11" Foreground="#888888" VerticalAlignment="Center" />
-                  <TextBlock Text="{Binding SelectedVersion.BaseModel}" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
-                </StackPanel>
+				<!-- Spec 10: name + type + creator + link-buttons on one line -->
+				<Grid ColumnDefinitions="*,Auto">
+				  <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" FlowDirection="LeftToRight">
+					<TextBlock Text="{Binding ModelName}" FontSize="18" FontWeight="Bold"
+							   TextWrapping="Wrap" VerticalAlignment="Center" />
+					<Border Background="#336699" CornerRadius="4" Padding="5,2" VerticalAlignment="Center">
+					  <TextBlock Text="{Binding ModelType}" Foreground="White" FontSize="11" />
+					</Border>
+					<TextBlock Text="{Binding CreatorUsername, StringFormat='by {0}'}"
+							   Foreground="#888888" FontSize="11" VerticalAlignment="Center"
+							   IsVisible="{Binding CreatorUsername, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+				  </StackPanel>
+				  <!-- Spec 5: three link buttons right-aligned -->
+				  <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+					<Button Content="CivitAI"    Command="{Binding OpenOnCivitAiCommand}"    FontSize="11" Padding="5,2" />
+					<Button Content="HuggingFace" Command="{Binding OpenOnHuggingFaceCommand}" FontSize="11" Padding="5,2" />
+					<Button Content="Creativity"  Command="{Binding OpenOnCreativityCommand}"  FontSize="11" Padding="5,2" />
+					<Button Content="Copy ID"     Command="{Binding CopyModelIdCommand}"       FontSize="11" Padding="5,2" />
+					<Button Content="ZIP folder"  Command="{Binding OpenZipFolderCommand}"     FontSize="11" Padding="5,2" />
+				  </StackPanel>
+				</Grid>
 
-                <!-- Tags (expandable) -->
-                <StackPanel Spacing="4">
-                  <StackPanel Orientation="Horizontal" Spacing="6">
-                    <TextBlock Text="Tags:" FontWeight="SemiBold" VerticalAlignment="Center" FontSize="12" />
-                    <Button Content="v" Command="{Binding ToggleTagsExpandedCommand}" FontSize="10" Padding="4,1" IsVisible="{Binding !TagsExpanded}" />
-                    <Button Content="^" Command="{Binding ToggleTagsExpandedCommand}" FontSize="10" Padding="4,1" IsVisible="{Binding TagsExpanded}" />
-                  </StackPanel>
-                  <ItemsControl ItemsSource="{Binding TagList}">
-                    <ItemsControl.ItemsPanel>
-                      <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                      <DataTemplate x:DataType="x:String">
-                        <Border Background="#2A2A2A" CornerRadius="8" Padding="6,2" Margin="2">
-                          <TextBlock Text="{Binding}" FontSize="10" />
-                        </Border>
-                      </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                  </ItemsControl>
-                </StackPanel>
+				<!-- Spec 12: base model + base model type before tags -->
+				<StackPanel Orientation="Horizontal" Spacing="8"
+							IsVisible="{Binding SelectedVersion, Converter={x:Static ObjectConverters.IsNotNull}}">
+				  <TextBlock Text="Base model:" FontSize="11" Foreground="#888888" VerticalAlignment="Center" />
+				  <TextBlock Text="{Binding SelectedVersion.BaseModel}" FontSize="11"
+							 FontWeight="SemiBold" VerticalAlignment="Center" />
+				  <TextBlock Text="{Binding SelectedVersion.BaseModelType}" FontSize="11"
+							 Foreground="#888888" VerticalAlignment="Center"
+							 IsVisible="{Binding SelectedVersion.BaseModelType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+				</StackPanel>
 
-                <!-- Version tabs -->
-                <TextBlock Text="Versions" FontWeight="SemiBold" FontSize="14" />
-                <TabControl ItemsSource="{Binding Versions}" SelectedItem="{Binding SelectedVersion}">
-                  <TabControl.ItemTemplate>
-                    <DataTemplate x:DataType="vm:ModelVersionTabViewModel">
-                      <StackPanel Orientation="Horizontal" Spacing="4">
-                        <TextBlock Text="{Binding ZipStatusIcon}" FontSize="11" VerticalAlignment="Center" ToolTip.Tip="{Binding ZipStatus}" />
-                        <TextBlock Text="{Binding Name}" FontSize="10" />
-                      </StackPanel>
-                    </DataTemplate>
-                  </TabControl.ItemTemplate>
-                  <TabControl.ContentTemplate>
-                    <DataTemplate x:DataType="vm:ModelVersionTabViewModel">
-                      <StackPanel Spacing="8" Margin="4">
-                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
-                          <TextBlock Grid.Row="0" Grid.Column="0" Text="Base Model:"    FontWeight="SemiBold" Margin="0,0,8,0" />
-                          <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding BaseModel}" />
-                          <TextBlock Grid.Row="1" Grid.Column="0" Text="Status:"        FontWeight="SemiBold" Margin="0,0,8,0" />
-                          <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Status}" />
-                          <TextBlock Grid.Row="2" Grid.Column="0" Text="Published:"     FontWeight="SemiBold" Margin="0,0,8,0" />
-                          <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding PublishedAt}" />
-                          <TextBlock Grid.Row="3" Grid.Column="0" Text="Trigger Words:" FontWeight="SemiBold" Margin="0,0,8,0" />
-                          <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding TriggerWords}" TextWrapping="Wrap" />
-                          <TextBlock Grid.Row="4" Grid.Column="0" Text="AIR:"           FontWeight="SemiBold" Margin="0,0,8,0" />
-                          <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Air}"  FontFamily="Monospace" />
-                          <TextBlock Grid.Row="5" Grid.Column="0" Text="ZIP:"           FontWeight="SemiBold" Margin="0,0,8,0" />
-                          <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding PrimaryZipPath}" TextWrapping="Wrap" FontSize="11" Foreground="#888888" />
-                        </Grid>
-                        <StackPanel Orientation="Horizontal" Spacing="16">
-                          <TextBlock Text="{Binding StatDownloadCount, StringFormat='Down {0:N0}'}" />
-                          <TextBlock Text="{Binding StatThumbsUp,      StringFormat='Up {0:N0}'}" />
-                          <TextBlock Text="{Binding StatRating,        StringFormat='* {0:F2}'}" />
-                        </StackPanel>
-                        <TextBlock Text="Files" FontWeight="SemiBold" />
-                        <ItemsControl ItemsSource="{Binding Files}">
-                          <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="vm:ModelVersionFileRowViewModel">
-                              <Border BorderBrush="#333333" BorderThickness="0,0,0,1" Padding="4,3">
-                                <Grid ColumnDefinitions="*,80,60,60,Auto,Auto">
-                                  <TextBlock Grid.Column="0" Text="{Binding Name}"   TextWrapping="Wrap" FontSize="11" />
-                                  <TextBlock Grid.Column="1" Text="{Binding SizeKb}" FontSize="11" HorizontalAlignment="Right" />
-                                  <TextBlock Grid.Column="2" Text="{Binding Format}" FontSize="11" HorizontalAlignment="Center" />
-                                  <TextBlock Grid.Column="3" Text="{Binding Fp}"     FontSize="11" HorizontalAlignment="Center" />
-                                  <Button Grid.Column="4" Content="V2" Command="{Binding CopyAutov2Command}" ToolTip.Tip="{Binding HashAutov2}" FontSize="10" Padding="4,1" IsVisible="{Binding HashAutov2, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                                  <Button Grid.Column="5" Content="V3" Command="{Binding CopyAutov3Command}" ToolTip.Tip="{Binding HashAutov3}" FontSize="10" Padding="4,1" IsVisible="{Binding HashAutov3, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                                </Grid>
-                              </Border>
-                            </DataTemplate>
-                          </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <TextBlock Text="Image Gallery" FontWeight="SemiBold" />
-                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Height="220">
-                          <ItemsControl ItemsSource="{Binding Images}">
-                            <ItemsControl.ItemsPanel>
-                              <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="6" /></ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                              <DataTemplate x:DataType="vm:ImageItemViewModel">
-                                <Border Margin="2" CornerRadius="4" ClipToBounds="True" ToolTip.Tip="{Binding Prompt}" Cursor="Hand" PointerPressed="OnImageClick">
-                                  <Image Source="{Binding Url}" Height="200" Stretch="Uniform" />
-                                </Border>
-                              </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                          </ItemsControl>
-                        </ScrollViewer>
-                        <TextBlock Text="Description" FontWeight="SemiBold" IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" FontSize="11" Foreground="#CCCCCC" IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                      </StackPanel>
-                    </DataTemplate>
-                  </TabControl.ContentTemplate>
-                </TabControl>
+				<!-- Tags (expandable) -->
+				<StackPanel Spacing="4">
+				  <StackPanel Orientation="Horizontal" Spacing="6">
+					<TextBlock Text="Tags:" FontWeight="SemiBold" VerticalAlignment="Center" FontSize="12" />
+					<Button Content="▼" Command="{Binding ToggleTagsExpandedCommand}" FontSize="10"
+							Padding="4,1" IsVisible="{Binding !TagsExpanded}" />
+					<Button Content="▲" Command="{Binding ToggleTagsExpandedCommand}" FontSize="10"
+							Padding="4,1" IsVisible="{Binding TagsExpanded}" />
+				  </StackPanel>
+				  <ItemsControl ItemsSource="{Binding TagList}" IsVisible="{Binding TagsExpanded}">
+					<ItemsControl.ItemsPanel>
+					  <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+					<ItemsControl.ItemTemplate>
+					  <DataTemplate x:DataType="x:String">
+						<Border Background="#2A2A2A" CornerRadius="8" Padding="6,2" Margin="2">
+						  <TextBlock Text="{Binding}" FontSize="10" />
+						</Border>
+					  </DataTemplate>
+					</ItemsControl.ItemTemplate>
+				  </ItemsControl>
+				</StackPanel>
 
-                <!-- Model description at very bottom -->
-                <TextBlock Text="Model Description" FontWeight="SemiBold" IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                <TextBlock Text="{Binding Description}" TextWrapping="Wrap" FontSize="12" IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+				<!-- Versions tabs -->
+				<TextBlock Text="Versions" FontWeight="SemiBold" FontSize="14" />
+				<TabControl ItemsSource="{Binding Versions}" SelectedItem="{Binding SelectedVersion}">
+				  <TabControl.ItemTemplate>
+					<DataTemplate x:DataType="vm:ModelVersionTabViewModel">
+					  <StackPanel Orientation="Horizontal" Spacing="4">
+						<TextBlock Text="{Binding ZipStatusIcon}" FontSize="11" VerticalAlignment="Center"
+								   ToolTip.Tip="{Binding ZipStatus}" />
+						<TextBlock Text="{Binding Name}" FontSize="10" />
+					  </StackPanel>
+					</DataTemplate>
+				  </TabControl.ItemTemplate>
+				  <TabControl.ContentTemplate>
+					<DataTemplate x:DataType="vm:ModelVersionTabViewModel">
+					  <StackPanel Spacing="8" Margin="4">
+						<!-- Spec 7: labels lowercase. Spec 6: Status + Published removed -->
+						<Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto">
+						  <TextBlock Grid.Row="0" Grid.Column="0" Text="trigger words:"
+									 FontSize="11" Margin="0,0,8,0" />
+						  <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TriggerWords}"
+									 TextWrapping="Wrap" FontSize="11" />
+						  <TextBlock Grid.Row="1" Grid.Column="0" Text="air:"
+									 FontSize="11" Margin="0,0,8,0" />
+						  <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Air}"
+									 FontFamily="Monospace" FontSize="11" />
+						  <TextBlock Grid.Row="2" Grid.Column="0" Text="zip:"
+									 FontSize="11" Margin="0,0,8,0" />
+						  <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding PrimaryZipPath}"
+									 TextWrapping="Wrap" FontSize="10" Foreground="#888888" />
+						</Grid>
+						<StackPanel Orientation="Horizontal" Spacing="16">
+						  <TextBlock Text="{Binding StatDownloadCount, StringFormat='Down {0:N0}'}" FontSize="11" />
+						  <TextBlock Text="{Binding StatThumbsUp,      StringFormat='Up {0:N0}'}"   FontSize="11" />
+						  <TextBlock Text="{Binding StatRating,        StringFormat='★ {0:F2}'}"    FontSize="11" />
+						</StackPanel>
+						<!-- Spec 4: files with local presence indicator -->
+						<TextBlock Text="Files" FontWeight="SemiBold" />
+						<ItemsControl ItemsSource="{Binding Files}">
+						  <ItemsControl.ItemTemplate>
+							<DataTemplate x:DataType="vm:ModelVersionFileRowViewModel">
+							  <Border BorderBrush="#333333" BorderThickness="0,0,0,1" Padding="4,3">
+								<Grid ColumnDefinitions="20,*,80,60,60,Auto,Auto">
+								  <!-- Local presence icon -->
+								  <TextBlock Grid.Column="0" Text="{Binding LocalPresenceIcon}"
+											 FontSize="12" VerticalAlignment="Center"
+											 ToolTip.Tip="{Binding LocalPath}" />
+								  <TextBlock Grid.Column="1" Text="{Binding Name}"
+											 TextWrapping="Wrap" FontSize="11" />
+								  <TextBlock Grid.Column="2" Text="{Binding SizeKb}"
+											 FontSize="11" HorizontalAlignment="Right" />
+								  <TextBlock Grid.Column="3" Text="{Binding Format}"
+											 FontSize="11" HorizontalAlignment="Center" />
+								  <TextBlock Grid.Column="4" Text="{Binding Fp}"
+											 FontSize="11" HorizontalAlignment="Center" />
+								  <Button Grid.Column="5" Content="V2" Command="{Binding CopyAutov2Command}"
+										  ToolTip.Tip="{Binding HashAutov2}" FontSize="10" Padding="4,1"
+										  IsVisible="{Binding HashAutov2, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+								  <Button Grid.Column="6" Content="V3" Command="{Binding CopyAutov3Command}"
+										  ToolTip.Tip="{Binding HashAutov3}" FontSize="10" Padding="4,1"
+										  IsVisible="{Binding HashAutov3, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+								</Grid>
+							  </Border>
+							</DataTemplate>
+						  </ItemsControl.ItemTemplate>
+						</ItemsControl>
+						<!-- Image gallery: horizontal scroll -->
+						<TextBlock Text="Image Gallery" FontWeight="SemiBold" />
+						<ScrollViewer HorizontalScrollBarVisibility="Auto"
+									  VerticalScrollBarVisibility="Disabled" Height="220">
+						  <ItemsControl ItemsSource="{Binding Images}">
+							<ItemsControl.ItemsPanel>
+							  <ItemsPanelTemplate>
+								<StackPanel Orientation="Horizontal" Spacing="6" />
+							  </ItemsPanelTemplate>
+							</ItemsControl.ItemsPanel>
+							<ItemsControl.ItemTemplate>
+							  <DataTemplate x:DataType="vm:ImageItemViewModel">
+								<Border Margin="2" CornerRadius="4" ClipToBounds="True"
+										ToolTip.Tip="{Binding Prompt}" Cursor="Hand"
+										PointerPressed="OnImageClick">
+								  <Image Source="{Binding Url}" Height="200" Stretch="Uniform" />
+								</Border>
+							  </DataTemplate>
+							</ItemsControl.ItemTemplate>
+						  </ItemsControl>
+						</ScrollViewer>
+						<!-- Version description at bottom -->
+						<TextBlock Text="Version Description" FontWeight="SemiBold"
+								   IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+						<TextBlock Text="{Binding Description}" TextWrapping="Wrap" FontSize="11"
+								   Foreground="#CCCCCC"
+								   IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+					  </StackPanel>
+					</DataTemplate>
+				  </TabControl.ContentTemplate>
+				</TabControl>
 
-              </StackPanel>
-            </DataTemplate>
-          </ContentControl.ContentTemplate>
-        </ContentControl>
-      </ScrollViewer>
+				<!-- Spec 9: Model description at very bottom -->
+				<TextBlock Text="Model Description" FontWeight="SemiBold"
+						   IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+				<TextBlock Text="{Binding Description}" TextWrapping="Wrap" FontSize="12"
+						   IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 
-    </Grid>
+			  </StackPanel>
+			</DataTemplate>
+		  </ContentControl.ContentTemplate>
+		</ContentControl>
+	  </ScrollViewer>
+
+	</Grid>
   </DockPanel>
 
 </UserControl>
