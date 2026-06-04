@@ -1,0 +1,143 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:vm="using:CaiViewer.Frontend.ViewModels"
+			 xmlns:scanner="using:CaiViewer.Core.Scanner"
+			 x:Class="CaiViewer.Frontend.Views.ScannerView"
+			 x:DataType="vm:ScannerViewModel">
+
+  <ScrollViewer>
+	<StackPanel Margin="12" Spacing="10">
+
+	  <TextBlock Text="⚡ FilescannerCLI" FontSize="16" FontWeight="SemiBold" />
+
+	  <!-- Scanner Mode -->
+	  <Border BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="10">
+		<StackPanel Spacing="6">
+		  <TextBlock Text="Scanner Mode" FontWeight="SemiBold" />
+		  <StackPanel Orientation="Horizontal" Spacing="16">
+			<RadioButton Content="File / Hash Scan (-S / -A)"
+						 IsChecked="{Binding Mode, Converter={x:Static ObjectConverters.IsNotNull}}"
+						 GroupName="mode" />
+			<RadioButton Content="URL / ID Scan (-U)"
+						 GroupName="mode" />
+			<RadioButton Content="Inspect SafeTensor (-I)"
+						 GroupName="mode" />
+		  </StackPanel>
+		</StackPanel>
+	  </Border>
+
+	  <!-- Input -->
+	  <Border BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="10">
+		<StackPanel Spacing="6">
+		  <TextBlock Text="Input" FontWeight="SemiBold" />
+		  <Grid ColumnDefinitions="*,Auto">
+			<TextBox Grid.Column="0" Text="{Binding Input}"
+					 Watermark="Path to .safetensors / list file / hash / model-version ID…" />
+			<Button Grid.Column="1" Content="Browse…" Command="{Binding BrowseInputCommand}" Margin="4,0,0,0" />
+		  </Grid>
+		  <StackPanel Orientation="Horizontal" Spacing="16">
+			<RadioButton Content="Single file" GroupName="inputtype" IsChecked="True" />
+			<RadioButton Content="InfileList.txt" GroupName="inputtype" />
+			<RadioButton Content="InAutoV2List.txt" GroupName="inputtype" />
+			<RadioButton Content="InUrlList.txt" GroupName="inputtype" />
+		  </StackPanel>
+		</StackPanel>
+	  </Border>
+
+	  <!-- Options -->
+	  <Border BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="10">
+		<StackPanel Spacing="6">
+		  <TextBlock Text="Options" FontWeight="SemiBold" />
+		  <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto">
+			<CheckBox Grid.Row="0" Grid.Column="0" Content="Create ZIP (-z)"        IsChecked="{Binding CreateZip}" />
+			<CheckBox Grid.Row="0" Grid.Column="1" Content="All version metadata (-a)" IsChecked="{Binding AllVersionsMeta}" />
+			<CheckBox Grid.Row="1" Grid.Column="0" Content="File output (-f)"       IsChecked="{Binding FileOutput}" />
+			<CheckBox Grid.Row="1" Grid.Column="1" Content="Write image URL lists (-i)" IsChecked="{Binding WriteImageUrlLists}" />
+			<CheckBox Grid.Row="2" Grid.Column="0" Content="History output (-h)"    IsChecked="{Binding HistoryOutput}" />
+			<CheckBox Grid.Row="2" Grid.Column="1" Content="Update mode (-u)"       IsChecked="{Binding UpdateMode}" />
+			<CheckBox Grid.Row="3" Grid.Column="0" Content="Debug output (-d)"      IsChecked="{Binding DebugOutput}" />
+			<CheckBox Grid.Row="3" Grid.Column="1" Content="Fast fail (-N)"         IsChecked="{Binding FastFail}" />
+		  </Grid>
+
+		  <Separator Margin="0,4" />
+		  <TextBlock Text="Download options" FontSize="11" Foreground="#888888" />
+		  <CheckBox Content="Primary tensor if missing (-p)"                       IsChecked="{Binding PrimaryTensorIfMissing}" />
+		  <CheckBox Content="All versions primary tensor – overwrite (-t)"         IsChecked="{Binding AllVersionsPrimaryTensorOverwrite}" />
+		  <CheckBox Content="All versions primary tensor – if missing (-c)"        IsChecked="{Binding AllVersionsPrimaryTensorIfMissing}" />
+		  <CheckBox Content="All files all versions – overwrite (-E)"              IsChecked="{Binding AllVersionsAllFilesOverwrite}" />
+		  <CheckBox Content="All files all versions – if missing (-C)"             IsChecked="{Binding AllVersionsAllFilesIfMissing}" />
+
+		  <Separator Margin="0,4" />
+		  <TextBlock Text="Inspect SafeTensor options (-I)" FontSize="11" Foreground="#888888" />
+		  <StackPanel Orientation="Horizontal" Spacing="16">
+			<CheckBox Content="Raw header (-Ih)"      IsChecked="{Binding InspectRawHeader}" />
+			<CheckBox Content="All metadata (-Im)"    IsChecked="{Binding InspectAllMetadata}" />
+			<CheckBox Content="Interesting (-Ii)"     IsChecked="{Binding InspectInteresting}" />
+		  </StackPanel>
+		</StackPanel>
+	  </Border>
+
+	  <!-- Parameters -->
+	  <Border BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="10">
+		<StackPanel Spacing="6">
+		  <TextBlock Text="Parameters" FontWeight="SemiBold" />
+		  <Grid ColumnDefinitions="160,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" >
+			<TextBlock Grid.Row="0" Grid.Column="0" Text="Central CivitAI Path (CCD:)" VerticalAlignment="Center" />
+			<TextBox   Grid.Row="0" Grid.Column="1" Text="{Binding CentralCivitAiPath}" />
+			<Button    Grid.Row="0" Grid.Column="2" Content="Browse…" Command="{Binding BrowseCcdCommand}" Margin="4,0,0,0" />
+
+			<TextBlock Grid.Row="1" Grid.Column="0" Text="Max download size MB (DLL:)" VerticalAlignment="Center" />
+			<NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding MaxDownloadSizeMb}"
+						   Minimum="1" Maximum="999999" />
+
+			<TextBlock Grid.Row="2" Grid.Column="0" Text="API Key (APIKEY:)" VerticalAlignment="Center" />
+			<TextBox   Grid.Row="2" Grid.Column="1" Text="{Binding ApiKey}"
+					   PasswordChar="•" RevealPassword="True" />
+
+			<TextBlock Grid.Row="3" Grid.Column="0" Text="Work Directory (WORKDIR:)" VerticalAlignment="Center" />
+			<TextBox   Grid.Row="3" Grid.Column="1" Text="{Binding WorkDirectory}" />
+			<Button    Grid.Row="3" Grid.Column="2" Content="Browse…" Command="{Binding BrowseWorkDirCommand}" Margin="4,0,0,0" />
+		  </Grid>
+		</StackPanel>
+	  </Border>
+
+	  <!-- Command preview -->
+	  <Border BorderBrush="#555" BorderThickness="1" CornerRadius="4" Background="#111" Padding="8">
+		<StackPanel Spacing="4">
+		  <StackPanel Orientation="Horizontal" Spacing="8">
+			<TextBlock Text="Command preview" FontSize="11" Foreground="#888888" VerticalAlignment="Center" />
+			<Button Content="📋 Copy" Command="{Binding CopyCommandCommand}" FontSize="10" Padding="5,1" />
+		  </StackPanel>
+		  <TextBlock Text="{Binding CommandPreview}" FontFamily="Monospace" FontSize="11"
+					 TextWrapping="Wrap" Foreground="#CCCCCC" />
+		</StackPanel>
+	  </Border>
+
+	  <!-- Run / Cancel -->
+	  <StackPanel Orientation="Horizontal" Spacing="8">
+		<Button Content="▶ Run" Command="{Binding RunCommand}"
+				IsEnabled="{Binding !IsRunning}" />
+		<Button Content="⏹ Cancel" Command="{Binding CancelCommand}"
+				IsVisible="{Binding IsRunning}" />
+		<ProgressBar IsIndeterminate="True" Width="200" IsVisible="{Binding IsRunning}" />
+		<TextBlock Text="{Binding ExitCode, StringFormat='Exit code: {0}'}"
+				   IsVisible="{Binding HasResult}" VerticalAlignment="Center" />
+	  </StackPanel>
+
+	  <!-- Log -->
+	  <Border BorderBrush="#333" BorderThickness="1" CornerRadius="4">
+		<ScrollViewer MaxHeight="350">
+		  <ItemsControl ItemsSource="{Binding LogLines}">
+			<ItemsControl.ItemTemplate>
+			  <DataTemplate>
+				<TextBlock Text="{Binding}" FontFamily="Monospace" FontSize="11" />
+			  </DataTemplate>
+			</ItemsControl.ItemTemplate>
+		  </ItemsControl>
+		</ScrollViewer>
+	  </Border>
+
+	</StackPanel>
+  </ScrollViewer>
+
+</UserControl>

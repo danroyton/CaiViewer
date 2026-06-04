@@ -1,0 +1,67 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:vm="using:CaiViewer.Frontend.ViewModels"
+			 x:Class="CaiViewer.Frontend.Views.SettingsView"
+			 x:DataType="vm:SettingsViewModel">
+
+  <ScrollViewer>
+	<StackPanel Margin="16" Spacing="12" MaxWidth="700">
+
+	  <TextBlock Text="⚙ Settings" FontSize="18" FontWeight="SemiBold" />
+
+	  <!-- Database -->
+	  <TextBlock Text="Database" FontWeight="SemiBold" Margin="0,8,0,0" />
+	  <Grid ColumnDefinitions="*,Auto">
+		<TextBox Grid.Column="0" Text="{Binding DatabasePath}"
+				 Watermark="Path to cai.db SQLite database…" />
+		<Button Grid.Column="1" Content="Browse…" Command="{Binding BrowseDatabaseCommand}" Margin="4,0,0,0" />
+	  </Grid>
+
+	  <!-- Repo path -->
+	  <TextBlock Text="Central CivitAI Repository Path" FontWeight="SemiBold" Margin="0,4,0,0" />
+	  <Grid ColumnDefinitions="*,Auto">
+		<TextBox Grid.Column="0" Text="{Binding CivitAiRepoPath}"
+				 Watermark="Root folder containing all ZIP archives (~/cai-repo)…" />
+		<Button Grid.Column="1" Content="Browse…" Command="{Binding BrowseCivitAiRepoCommand}" Margin="4,0,0,0" />
+	  </Grid>
+
+	  <!-- FilescannerCLI -->
+	  <TextBlock Text="FilescannerCLI Executable" FontWeight="SemiBold" Margin="0,4,0,0" />
+	  <Grid ColumnDefinitions="*,Auto">
+		<TextBox Grid.Column="0" Text="{Binding FilescannerCliPath}"
+				 Watermark="Path to FilescannerCLI.exe…" />
+		<Button Grid.Column="1" Content="Browse…" Command="{Binding BrowseFilescannerCliCommand}" Margin="4,0,0,0" />
+	  </Grid>
+
+	  <!-- NSFW filter -->
+	  <TextBlock Text="Default NSFW Filter" FontWeight="SemiBold" Margin="0,4,0,0" />
+	  <StackPanel Orientation="Horizontal" Spacing="12">
+		<Slider Minimum="0" Maximum="31" Value="{Binding DefaultMaxNsfwLevel}" Width="200" />
+		<TextBlock Text="{Binding DefaultMaxNsfwLevel, StringFormat='Level ≤ {0}'}" VerticalAlignment="Center" />
+	  </StackPanel>
+
+	  <!-- Thumbnail size -->
+	  <TextBlock Text="Thumbnail Size" FontWeight="SemiBold" Margin="0,4,0,0" />
+	  <StackPanel Orientation="Horizontal" Spacing="12">
+		<Slider Minimum="0" Maximum="2" Value="{Binding ThumbnailSize}" Width="120" TickFrequency="1" IsSnapToTickEnabled="True" />
+		<TextBlock VerticalAlignment="Center">
+		  <TextBlock.Text>
+			<MultiBinding StringFormat="{}{0}">
+			  <Binding Path="ThumbnailSize" />
+			</MultiBinding>
+		  </TextBlock.Text>
+		</TextBlock>
+	  </StackPanel>
+
+	  <!-- Toggles -->
+	  <CheckBox Content="Show blurhash placeholder while images load" IsChecked="{Binding ShowBlurhashPlaceholder}" />
+	  <CheckBox Content="Allow network fallback for images (fetch from URL if not in ZIP)" IsChecked="{Binding AllowNetworkFallback}" />
+
+	  <!-- Save -->
+	  <Button Content="💾 Save Settings" Command="{Binding SaveCommand}"
+			  HorizontalAlignment="Left" Margin="0,12,0,0" />
+
+	</StackPanel>
+  </ScrollViewer>
+
+</UserControl>
