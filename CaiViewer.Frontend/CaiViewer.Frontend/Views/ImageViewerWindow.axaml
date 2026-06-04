@@ -1,0 +1,38 @@
+<Window xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:vm="using:CaiViewer.Frontend.ViewModels"
+		x:Class="CaiViewer.Frontend.Views.ImageViewerWindow"
+		x:DataType="vm:ImageViewerViewModel"
+		Title="Image Viewer"
+		Width="1000" Height="750"
+		WindowStartupLocation="CenterOwner"
+		Background="#111111">
+
+  <DockPanel>
+
+	<!-- Top info bar -->
+	<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="16" Margin="12,8" Background="#1A1A1A">
+	  <TextBlock Text="{Binding CurrentInfo}" VerticalAlignment="Center" Foreground="#CCCCCC" />
+	  <Button Content="📋 Copy Prompt" Command="{Binding CopyPromptCommand}"
+			  IsVisible="{Binding CurrentPrompt, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+	</StackPanel>
+
+	<!-- Prompt bar -->
+	<ScrollViewer DockPanel.Dock="Bottom" MaxHeight="80" Background="#1A1A1A" Margin="0,4,0,0">
+	  <TextBlock Text="{Binding CurrentPrompt}" TextWrapping="Wrap" FontSize="11"
+				 Margin="12,4" Foreground="#AAAAAA"
+				 IsVisible="{Binding CurrentPrompt, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+	</ScrollViewer>
+
+	<!-- Navigation -->
+	<Button DockPanel.Dock="Left" Content="◀" Command="{Binding PreviousCommand}"
+			VerticalAlignment="Center" FontSize="22" Padding="12,20" Background="Transparent" Foreground="White" />
+	<Button DockPanel.Dock="Right" Content="▶" Command="{Binding NextCommand}"
+			VerticalAlignment="Center" FontSize="22" Padding="12,20" Background="Transparent" Foreground="White" />
+
+	<!-- Image -->
+	<Image Source="{Binding CurrentBitmap}" Stretch="Uniform" />
+
+  </DockPanel>
+
+</Window>

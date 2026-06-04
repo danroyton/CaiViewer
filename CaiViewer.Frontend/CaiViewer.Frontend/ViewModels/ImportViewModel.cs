@@ -9,7 +9,7 @@ namespace CaiViewer.Frontend.ViewModels;
 
 public partial class ImportViewModel : ViewModelBase
 {
-    private readonly AppSettings _settings;
+    private AppSettings _settings;
     private CancellationTokenSource? _cts;
 
     [ObservableProperty] private string _rootPath = string.Empty;
@@ -24,6 +24,12 @@ public partial class ImportViewModel : ViewModelBase
     {
         _settings = settings;
         _rootPath = settings.CivitAiRepoPath;
+    }
+
+    public void RefreshSettings(AppSettings settings)
+    {
+        _settings = settings;
+        RootPath = settings.CivitAiRepoPath;
     }
 
     [RelayCommand]

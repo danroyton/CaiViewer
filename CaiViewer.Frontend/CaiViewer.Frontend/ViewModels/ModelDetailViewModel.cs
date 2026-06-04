@@ -7,6 +7,8 @@ using CaiViewer.Core.Domain;
 
 namespace CaiViewer.Frontend.ViewModels;
 
+public enum ZipStatus { Unknown, Present, Missing, NoSafetensors }
+
 public partial class ModelVersionTabViewModel : ViewModelBase
 {
     public int SurrogateId { get; init; }
@@ -25,6 +27,17 @@ public partial class ModelVersionTabViewModel : ViewModelBase
     public double? StatRating { get; init; }
     public string TriggerWords { get; init; } = string.Empty;
     public string PrimaryZipPath { get; init; } = string.Empty;
+    public ZipStatus ZipStatus { get; init; } = ZipStatus.Unknown;
+
+    /// <summary>Status icon: ✅ zip+safetensors present, ❌ zip missing, ⚠ zip present but no safetensors.</summary>
+    public string ZipStatusIcon => ZipStatus switch
+    {
+        ZipStatus.Present       => "✅",
+        ZipStatus.Missing       => "❌",
+        ZipStatus.NoSafetensors => "⚠️",
+        _                       => "❓"
+    };
+
     public ObservableCollection<ModelVersionFileRowViewModel> Files { get; } = [];
     public ObservableCollection<ImageItemViewModel> Images { get; } = [];
 }
@@ -73,6 +86,7 @@ public partial class ImageItemViewModel : ViewModelBase
 public partial class ModelDetailViewModel : ViewModelBase
 {
     [ObservableProperty] private ModelVersionTabViewModel? _selectedVersion;
+    [ObservableProperty] private bool _tagsExpanded;
 
     public int ModelId { get; init; }
     public string ModelName { get; init; } = string.Empty;
@@ -81,12 +95,13 @@ public partial class ModelDetailViewModel : ViewModelBase
     public int? NsfwLevel { get; init; }
     public string? Description { get; init; }
     public string Tags { get; init; } = string.Empty;
+    public ObservableCollection<string> TagList { get; } = [];
     public string CivitAiUrl { get; init; } = string.Empty;
 
     public ObservableCollection<ModelVersionTabViewModel> Versions { get; } = [];
 
     public static async Task<ModelDetailViewModel?> LoadAsync(
-        CaiDbContext db, int modelId, int civitaiVersionId, string repoRoot)
+        CaiDbContext db, int modelId, int civitaiVersionId, string repoRoot, string safetensorsSearchPath = "")
     {
         try
         {
@@ -95,11 +110,11 @@ public partial class ModelDetailViewModel : ViewModelBase
                 "SELECT * FROM Model WHERE id = @modelId", new { modelId });
             if (model is null) return null;
 
-            var tags = await Dapper.SqlMapper.QueryAsync<string>(conn, """
+            var tags = (await Dapper.SqlMapper.QueryAsync<string>(conn, """
                 SELECT t.name FROM Tag t
                 JOIN ModelTag mt ON mt.tag_id = t.id
                 WHERE mt.model_id = @modelId ORDER BY t.name
-                """, new { modelId });
+                """, new { modelId })).ToList();
 
             var versions = await Dapper.SqlMapper.QueryAsync<ModelVersion>(conn,
                 "SELECT * FROM ModelVersion WHERE model_id = @modelId ORDER BY published_at DESC",
@@ -112,10 +127,13 @@ public partial class ModelDetailViewModel : ViewModelBase
                 ModelType = model.Type,
                 CreatorUsername = model.CreatorUsername,
                 NsfwLevel = model.NsfwLevel,
-                Description = model.Description,
+                Description = HtmlHelper.ToPlainText(model.Description),
                 Tags = string.Join(", ", tags),
+                // Issue 7: link only to model page, no version ID
                 CivitAiUrl = $"https://civitai.com/models/{modelId}"
             };
+
+            foreach (var tag in tags) vm.TagList.Add(tag);
 
             foreach (var v in versions)
             {
@@ -125,6 +143,25 @@ public partial class ModelDetailViewModel : ViewModelBase
                 var zipPath = zipRow is not null
                     ? Path.Combine(repoRoot, zipRow.ZipPath)
                     : string.Empty;
+
+                // Spec 6: determine file presence: sibling dir of ZIP + optional search path
+                var zipStatus = ZipStatus.Unknown;
+                if (!string.IsNullOrEmpty(zipPath))
+                {
+                    if (File.Exists(zipPath))
+                    {
+                        var zipDir = Path.GetDirectoryName(zipPath) ?? string.Empty;
+                        bool hasSafetensors = (Directory.Exists(zipDir) &&
+                            Directory.EnumerateFiles(zipDir, "*.safetensors", SearchOption.TopDirectoryOnly).Any())
+                            || (!string.IsNullOrEmpty(safetensorsSearchPath) && Directory.Exists(safetensorsSearchPath) &&
+                                Directory.EnumerateFiles(safetensorsSearchPath, "*.safetensors", SearchOption.AllDirectories).Any());
+                        zipStatus = hasSafetensors ? ZipStatus.Present : ZipStatus.NoSafetensors;
+                    }
+                    else
+                    {
+                        zipStatus = ZipStatus.Missing;
+                    }
+                }
 
                 var words = await Dapper.SqlMapper.QueryAsync<string>(conn,
                     "SELECT word FROM ModelVersionTrainedWord WHERE model_version_id = @id", new { id = v.Id });
@@ -145,7 +182,7 @@ public partial class ModelDetailViewModel : ViewModelBase
                     PublishedAt = v.PublishedAt?.ToString("yyyy-MM-dd"),
                     Status = v.Status,
                     Availability = v.Availability,
-                    Description = v.Description,
+                    Description = HtmlHelper.ToPlainText(v.Description),
                     Air = v.Air,
                     DownloadUrl = v.DownloadUrl,
                     TrainingDetails = v.TrainingDetails,
@@ -153,7 +190,8 @@ public partial class ModelDetailViewModel : ViewModelBase
                     StatThumbsUp = v.StatThumbsUp,
                     StatRating = v.StatRating,
                     TriggerWords = string.Join(", ", words),
-                    PrimaryZipPath = zipPath
+                    PrimaryZipPath = zipPath,
+                    ZipStatus = zipStatus
                 };
 
                 foreach (var f in files)
@@ -202,6 +240,9 @@ public partial class ModelDetailViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private void ToggleTagsExpanded() => TagsExpanded = !TagsExpanded;
+
+    [RelayCommand]
     private async Task CopyModelIdAsync()
     {
         await CopyToClipboardAsync(ModelId.ToString());
@@ -210,9 +251,8 @@ public partial class ModelDetailViewModel : ViewModelBase
     [RelayCommand]
     private void OpenOnCivitAi()
     {
-        var url = SelectedVersion is not null
-            ? $"https://civitai.com/models/{ModelId}?modelVersionId={SelectedVersion.CivitaiVersionId}"
-            : CivitAiUrl;
+        // Issue 7: always link to model page only (no modelVersionId param)
+        var url = CivitAiUrl;
         try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true }); }
         catch { }
     }

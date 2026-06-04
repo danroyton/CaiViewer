@@ -5,19 +5,61 @@
 			 x:Class="CaiViewer.Frontend.Views.ShellView"
 			 x:DataType="vm:ShellViewModel">
 
-  <TabControl>
-	<TabItem Header="📷 Browse">
-	  <views:BrowseView DataContext="{Binding Browse}" />
-	</TabItem>
-	<TabItem Header="📥 Import">
-	  <views:ImportView DataContext="{Binding Import}" />
-	</TabItem>
-	<TabItem Header="⚡ Scanner">
-	  <views:ScannerView DataContext="{Binding Scanner}" />
-	</TabItem>
-	<TabItem Header="⚙ Settings">
-	  <views:SettingsView DataContext="{Binding Settings}" />
-	</TabItem>
-  </TabControl>
+  <Panel>
+
+	<!-- ── Main shell ────────────────────────────────────────── -->
+	<DockPanel>
+
+	  <!-- Profile selector bar (issue 3) -->
+	  <Border DockPanel.Dock="Top" Background="#1A1A2E" Padding="8,4">
+		<StackPanel Orientation="Horizontal" Spacing="10">
+		  <TextBlock Text="Repository:" VerticalAlignment="Center" Foreground="#AAAAAA" FontSize="12" />
+		  <ComboBox ItemsSource="{Binding ProfileNames}"
+					SelectedItem="{Binding SelectedProfileName}"
+					MinWidth="160" FontSize="12" />
+		  <TextBlock Text="{Binding AppSettings.DatabasePath}" VerticalAlignment="Center"
+					 FontSize="11" Foreground="#666666" />
+		</StackPanel>
+	  </Border>
+
+	  <TabControl>
+		<TabItem Header="📷 Browse">
+		  <views:BrowseView DataContext="{Binding Browse}" />
+		</TabItem>
+		<TabItem Header="📥 Import">
+		  <views:ImportView DataContext="{Binding Import}" />
+		</TabItem>
+		<TabItem Header="⚡ Scanner">
+		  <views:ScannerView DataContext="{Binding Scanner}" />
+		</TabItem>
+		<TabItem Header="⚙ Settings">
+		  <views:SettingsView DataContext="{Binding Settings}" />
+		</TabItem>
+	  </TabControl>
+
+	</DockPanel>
+
+	<!-- ── First-run overlay (issue 2) ──────────────────────── -->
+	<Border IsVisible="{Binding ShowFirstRunDialog}"
+			Background="#CC000000" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+	  <Border Background="#1E1E2E" CornerRadius="8" Padding="32"
+			  HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="480">
+		<StackPanel Spacing="16">
+		  <TextBlock Text="Welcome to CaiViewer" FontSize="22" FontWeight="Bold" />
+		  <TextBlock TextWrapping="Wrap"
+					 Text="No database is configured yet. Please select (or create) a folder where your cai.db will be stored." />
+		  <StackPanel Spacing="6">
+			<TextBlock Text="Profile name:" FontSize="12" />
+			<TextBox Text="{Binding NewProfileName}" Watermark="e.g. My Local Repo" />
+		  </StackPanel>
+		  <Button Content="📂 Select Folder and Create Database"
+				  Command="{Binding SelectDatabaseFolderCommand}"
+				  HorizontalAlignment="Stretch" FontSize="14" />
+		  <TextBlock Text="You can add more profiles later in Settings." FontSize="11" Foreground="#888888" />
+		</StackPanel>
+	  </Border>
+	</Border>
+
+  </Panel>
 
 </UserControl>

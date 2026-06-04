@@ -13,6 +13,7 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty] private string _databasePath;
     [ObservableProperty] private string _civitAiRepoPath;
     [ObservableProperty] private string _filescannerCliPath;
+    [ObservableProperty] private string _safetensorsSearchPath;
     [ObservableProperty] private int _defaultMaxNsfwLevel;
     [ObservableProperty] private int _thumbnailSize;
     [ObservableProperty] private bool _showBlurhashPlaceholder;
@@ -24,6 +25,7 @@ public partial class SettingsViewModel : ViewModelBase
         _databasePath = settings.DatabasePath;
         _civitAiRepoPath = settings.CivitAiRepoPath;
         _filescannerCliPath = settings.FilescannerCliPath;
+        _safetensorsSearchPath = settings.SafetensorsSearchPath;
         _defaultMaxNsfwLevel = settings.DefaultMaxNsfwLevel;
         _thumbnailSize = settings.ThumbnailSize;
         _showBlurhashPlaceholder = settings.ShowBlurhashPlaceholder;
@@ -46,6 +48,13 @@ public partial class SettingsViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private async Task BrowseSafetensorsSearchPathAsync()
+    {
+        var path = await PickFolderAsync("Select folder to search for safetensors / model files");
+        if (path is not null) SafetensorsSearchPath = path;
+    }
+
+    [RelayCommand]
     private async Task BrowseFilescannerCliAsync()
     {
         var path = await PickFileAsync("Select FilescannerCLI executable",
@@ -59,6 +68,7 @@ public partial class SettingsViewModel : ViewModelBase
         _settings.DatabasePath = DatabasePath;
         _settings.CivitAiRepoPath = CivitAiRepoPath;
         _settings.FilescannerCliPath = FilescannerCliPath;
+        _settings.SafetensorsSearchPath = SafetensorsSearchPath;
         _settings.DefaultMaxNsfwLevel = DefaultMaxNsfwLevel;
         _settings.ThumbnailSize = ThumbnailSize;
         _settings.ShowBlurhashPlaceholder = ShowBlurhashPlaceholder;

@@ -25,6 +25,14 @@
 		<Button Grid.Column="1" Content="Browse…" Command="{Binding BrowseCivitAiRepoCommand}" Margin="4,0,0,0" />
 	  </Grid>
 
+	  <!-- Safetensors search path (spec 6) -->
+	  <TextBlock Text="Safetensors / Model Files Search Path (scanned recursively)" FontWeight="SemiBold" Margin="0,4,0,0" />
+	  <Grid ColumnDefinitions="*,Auto">
+		<TextBox Grid.Column="0" Text="{Binding SafetensorsSearchPath}"
+				 Watermark="Additional folder to search for .safetensors files…" />
+		<Button Grid.Column="1" Content="Browse…" Command="{Binding BrowseSafetensorsSearchPathCommand}" Margin="4,0,0,0" />
+	  </Grid>
+
 	  <!-- FilescannerCLI -->
 	  <TextBlock Text="FilescannerCLI Executable" FontWeight="SemiBold" Margin="0,4,0,0" />
 	  <Grid ColumnDefinitions="*,Auto">

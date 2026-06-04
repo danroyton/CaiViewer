@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.IO.Compression;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CaiViewer.Core;
@@ -21,6 +23,12 @@ public partial class ModelVersionRowViewModel : ViewModelBase
     public string? PrimaryZipPath { get; init; }
     public double? StatRating { get; init; }
     public bool HasZip => !string.IsNullOrEmpty(PrimaryZipPath);
+
+    // Spec 4: up to 3 preview images (one per model version) shown side-by-side
+    public ObservableCollection<Bitmap> PreviewImages { get; } = [];
+
+    // Kept for hover tooltip (spec 3) – first image
+    public Bitmap? Thumbnail => PreviewImages.Count > 0 ? PreviewImages[0] : null;
 }
 
 public partial class BrowseViewModel : ViewModelBase
@@ -31,6 +39,7 @@ public partial class BrowseViewModel : ViewModelBase
     [ObservableProperty] private string _searchText = string.Empty;
     [ObservableProperty] private int _totalCount;
     [ObservableProperty] private int _currentPage;
+    [ObservableProperty] private int _pageSize = 50;
     [ObservableProperty] private bool _isLoading;
     [ObservableProperty] private string _statusText = "Ready";
     [ObservableProperty] private ModelVersionRowViewModel? _selectedRow;
@@ -43,6 +52,12 @@ public partial class BrowseViewModel : ViewModelBase
     [ObservableProperty] private bool? _hasZipFilter;
     [ObservableProperty] private string _sortOption = "NameAsc";
 
+    // Tag filter
+    [ObservableProperty] private string _tagInput = string.Empty;
+    public ObservableCollection<string> ActiveTags { get; } = [];
+
+    public int TotalPages => TotalCount == 0 ? 1 : (int)Math.Ceiling(TotalCount / (double)PageSize);
+
     public ObservableCollection<ModelVersionRowViewModel> Results { get; } = [];
     public ObservableCollection<string> AvailableTypes { get; } = [];
     public ObservableCollection<string> AvailableBaseModels { get; } = [];
@@ -50,11 +65,13 @@ public partial class BrowseViewModel : ViewModelBase
     public BrowseViewModel(AppSettings settings)
     {
         _settings = settings;
+        _pageSize = settings.PageSize;
     }
 
     public void RefreshSettings(AppSettings settings)
     {
         _settings = settings;
+        PageSize = settings.PageSize;
     }
 
     partial void OnSearchTextChanged(string value) => _ = DebounceSearchAsync();
@@ -63,6 +80,7 @@ public partial class BrowseViewModel : ViewModelBase
     partial void OnMaxNsfwLevelChanged(int value) => _ = ExecuteSearchAsync();
     partial void OnHasZipFilterChanged(bool? value) => _ = ExecuteSearchAsync();
     partial void OnSortOptionChanged(string value) => _ = ExecuteSearchAsync();
+    partial void OnPageSizeChanged(int value) => _ = ExecuteSearchAsync();
 
     [RelayCommand]
     private async Task RefreshAsync() => await ExecuteSearchAsync();
@@ -70,7 +88,7 @@ public partial class BrowseViewModel : ViewModelBase
     [RelayCommand]
     private async Task NextPageAsync()
     {
-        CurrentPage++;
+        if (CurrentPage < TotalPages - 1) CurrentPage++;
         await ExecuteSearchAsync(resetPage: false);
     }
 
@@ -79,6 +97,51 @@ public partial class BrowseViewModel : ViewModelBase
     {
         if (CurrentPage > 0) CurrentPage--;
         await ExecuteSearchAsync(resetPage: false);
+    }
+
+    [RelayCommand]
+    private async Task NextTenPagesAsync()
+    {
+        CurrentPage = Math.Min(CurrentPage + 10, TotalPages - 1);
+        await ExecuteSearchAsync(resetPage: false);
+    }
+
+    [RelayCommand]
+    private async Task PreviousTenPagesAsync()
+    {
+        CurrentPage = Math.Max(CurrentPage - 10, 0);
+        await ExecuteSearchAsync(resetPage: false);
+    }
+
+    [RelayCommand]
+    private async Task AddTagAsync()
+    {
+        var tag = TagInput.Trim();
+        if (string.IsNullOrEmpty(tag) || ActiveTags.Contains(tag)) return;
+        ActiveTags.Add(tag);
+        TagInput = string.Empty;
+        await ExecuteSearchAsync();
+    }
+
+    [RelayCommand]
+    private async Task RemoveTagAsync(string tag)
+    {
+        ActiveTags.Remove(tag);
+        await ExecuteSearchAsync();
+    }
+
+    [RelayCommand]
+    private async Task ClearTypeFilterAsync()
+    {
+        FilterType = null;
+        await ExecuteSearchAsync();
+    }
+
+    [RelayCommand]
+    private async Task ClearBaseModelFilterAsync()
+    {
+        FilterBaseModel = null;
+        await ExecuteSearchAsync();
     }
 
     partial void OnSelectedRowChanged(ModelVersionRowViewModel? value)
@@ -91,7 +154,7 @@ public partial class BrowseViewModel : ViewModelBase
     {
         if (string.IsNullOrEmpty(_settings.DatabasePath)) return;
         var db = new CaiDbContext(_settings.DatabasePath);
-        SelectedDetail = await ModelDetailViewModel.LoadAsync(db, row.ModelId, row.CivitaiVersionId, _settings.CivitAiRepoPath);
+        SelectedDetail = await ModelDetailViewModel.LoadAsync(db, row.ModelId, row.CivitaiVersionId, _settings.CivitAiRepoPath, _settings.SafetensorsSearchPath);
     }
 
     private async Task DebounceSearchAsync()
@@ -123,9 +186,11 @@ public partial class BrowseViewModel : ViewModelBase
                 BaseModels = FilterBaseModel is null ? null : [FilterBaseModel],
                 MaxNsfwLevel = MaxNsfwLevel < 31 ? MaxNsfwLevel : null,
                 HasZip = HasZipFilter,
+                Tags = ActiveTags.Count > 0 ? [.. ActiveTags] : null,
+                TagsMatchAll = true,
                 Sort = Enum.TryParse<SortOption>(SortOption, out var s) ? s : Core.Search.SortOption.NameAsc,
                 Page = CurrentPage,
-                PageSize = 50
+                PageSize = PageSize
             };
 
             var (rows, total) = await svc.SearchAsync(q);
@@ -151,7 +216,10 @@ public partial class BrowseViewModel : ViewModelBase
             }
 
             await LoadFilterOptionsAsync(db);
-            StatusText = $"{total} versions found | {_settings.DatabasePath}";
+            StatusText = $"{total} versions found | DB: {_settings.DatabasePath}";
+
+            // Issue 4: Load preview thumbnails from ZIP in background
+            _ = LoadThumbnailsAsync(Results.ToList(), _settings.CivitAiRepoPath);
         }
         catch (Exception ex)
         {
@@ -160,6 +228,57 @@ public partial class BrowseViewModel : ViewModelBase
         finally
         {
             IsLoading = false;
+        }
+    }
+
+    private static async Task LoadThumbnailsAsync(List<ModelVersionRowViewModel> rows, string repoRoot)
+    {
+        // Group rows by model: each row in the list is one result row for a model version.
+        // We show up to 3 preview images (one per version zip) per result row.
+        // Because results may show the same model multiple times (different versions),
+        // collect ZIPs for the same ModelId together.
+        var byModel = rows.GroupBy(r => r.ModelId);
+
+        foreach (var group in byModel)
+        {
+            var zips = group
+                .Where(r => !string.IsNullOrEmpty(r.PrimaryZipPath))
+                .Select(r => Path.IsPathRooted(r.PrimaryZipPath!)
+                    ? r.PrimaryZipPath!
+                    : Path.Combine(repoRoot, r.PrimaryZipPath!))
+                .Distinct()
+                .Take(3)
+                .ToList();
+
+            var bitmaps = new List<Bitmap>();
+            foreach (var zipPath in zips)
+            {
+                if (!File.Exists(zipPath)) continue;
+                var bmp = await Task.Run(() =>
+                {
+                    try
+                    {
+                        using var zip = ZipFile.OpenRead(zipPath);
+                        var entry = zip.Entries.FirstOrDefault(e =>
+                            e.Name.EndsWith("_preview.webp", StringComparison.OrdinalIgnoreCase));
+                        if (entry is null) return null;
+                        using var stream = entry.Open();
+                        using var ms = new MemoryStream();
+                        stream.CopyTo(ms);
+                        ms.Position = 0;
+                        return new Bitmap(ms);
+                    }
+                    catch { return null; }
+                });
+                if (bmp is not null) bitmaps.Add(bmp);
+            }
+
+            // Assign the same list of bitmaps to every row in this model group
+            foreach (var row in group)
+            {
+                row.PreviewImages.Clear();
+                foreach (var b in bitmaps) row.PreviewImages.Add(b);
+            }
         }
     }
 
