@@ -115,8 +115,17 @@ public partial class ModelDetailViewModel : ViewModelBase
         try
         {
             await using var conn = db.CreateConnection();
-            var model = await Dapper.SqlMapper.QuerySingleOrDefaultAsync<Core.Domain.Model>(conn,
-                "SELECT * FROM Model WHERE id = @modelId", new { modelId });
+            var model = await Dapper.SqlMapper.QuerySingleOrDefaultAsync<Core.Domain.Model>(conn, """
+                SELECT
+                    id AS Id,
+                    name AS Name,
+                    description AS Description,
+                    type AS Type,
+                    creator_username AS CreatorUsername,
+                    nsfw_level AS NsfwLevel
+                FROM Model
+                WHERE id = @modelId
+                """, new { modelId });
             if (model is null) return null;
 
             var tags = (await Dapper.SqlMapper.QueryAsync<string>(conn, """
@@ -125,9 +134,29 @@ public partial class ModelDetailViewModel : ViewModelBase
                 WHERE mt.model_id = @modelId ORDER BY t.name
                 """, new { modelId })).ToList();
 
-            var versions = await Dapper.SqlMapper.QueryAsync<ModelVersion>(conn,
-                "SELECT * FROM ModelVersion WHERE model_id = @modelId ORDER BY published_at DESC",
-                new { modelId });
+            var versions = await Dapper.SqlMapper.QueryAsync<ModelVersion>(conn, """
+                SELECT
+                    id AS Id,
+                    civitai_version_id AS CivitaiVersionId,
+                    snapshot_index AS SnapshotIndex,
+                    model_id AS ModelId,
+                    name AS Name,
+                    status AS Status,
+                    availability AS Availability,
+                    base_model AS BaseModel,
+                    base_model_type AS BaseModelType,
+                    description AS Description,
+                    air AS Air,
+                    download_url AS DownloadUrl,
+                    training_details AS TrainingDetails,
+                    published_at AS PublishedAt,
+                    stat_download_count AS StatDownloadCount,
+                    stat_thumbs_up AS StatThumbsUp,
+                    stat_rating AS StatRating
+                FROM ModelVersion
+                WHERE model_id = @modelId
+                ORDER BY published_at DESC
+                """, new { modelId });
 
             var vm = new ModelDetailViewModel
             {

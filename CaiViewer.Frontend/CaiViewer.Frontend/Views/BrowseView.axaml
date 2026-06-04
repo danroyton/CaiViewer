@@ -107,18 +107,12 @@
 		  <DataTemplate x:DataType="vm:ModelVersionRowViewModel">
 			  <!-- Row content: preview strip (196×196 per image) + metadata -->
 			  <Grid ColumnDefinitions="196,*,Auto" Margin="2">
-				<!-- Hover tooltip: 3 images at 392px wide each, 392px high -->
+				<!-- Hover tooltip: first preview.webp in original size (unscaled) -->
 				<ToolTip.Tip>
-				  <ItemsControl ItemsSource="{Binding PreviewImages}">
-					<ItemsControl.ItemsPanel>
-					  <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
-					</ItemsControl.ItemsPanel>
-					<ItemsControl.ItemTemplate>
-					  <DataTemplate>
-						<Image Source="{Binding}" Width="1200" Height="600" Stretch="Uniform" />
-					  </DataTemplate>
-					</ItemsControl.ItemTemplate>
-				  </ItemsControl>
+				  <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+								MaxHeight="900" MaxWidth="1600">
+					<Image Source="{Binding Thumbnail}" Stretch="None" />
+				  </ScrollViewer>
 				</ToolTip.Tip>
 			  <!-- Preview strip: up to 3 × 196px wide, 196px high -->
 			  <Panel Grid.Column="0" Width="196" Height="196">
@@ -129,7 +123,7 @@
 				  </ItemsControl.ItemsPanel>
 				  <ItemsControl.ItemTemplate>
 					<DataTemplate>
-					  <Image Source="{Binding}" Width="196" Height="196" Stretch="UniformToFill" />
+					  <Image Source="{Binding}" Width="196" Height="196" Stretch="None" />
 					</DataTemplate>
 				  </ItemsControl.ItemTemplate>
 				</ItemsControl>
@@ -178,9 +172,11 @@
 					<Border Background="#336699" CornerRadius="4" Padding="5,2" VerticalAlignment="Center">
 					  <TextBlock Text="{Binding ModelType}" Foreground="White" FontSize="11" />
 					</Border>
-					<TextBlock Text="{Binding CreatorUsername, StringFormat='by {0}'}"
-							   Foreground="#888888" FontSize="11" VerticalAlignment="Center"
-							   IsVisible="{Binding CreatorUsername, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+					<StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+					  <TextBlock Text="created by:" Foreground="#888888" FontSize="11" />
+					  <TextBlock Text="{Binding CreatorUsername, TargetNullValue='-'}"
+							 Foreground="#888888" FontSize="11" />
+					</StackPanel>
 				  </StackPanel>
 				  <!-- Spec 5: three link buttons right-aligned -->
 				  <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
@@ -195,12 +191,12 @@
 				<!-- Spec 12: base model + base model type before tags -->
 				<StackPanel Orientation="Horizontal" Spacing="8"
 							IsVisible="{Binding SelectedVersion, Converter={x:Static ObjectConverters.IsNotNull}}">
-				  <TextBlock Text="Base model:" FontSize="11" Foreground="#888888" VerticalAlignment="Center" />
-				  <TextBlock Text="{Binding SelectedVersion.BaseModel}" FontSize="11"
+				  <TextBlock Text="base model:" FontSize="11" Foreground="#888888" VerticalAlignment="Center" />
+				  <TextBlock Text="{Binding SelectedVersion.BaseModel, TargetNullValue='-'}" FontSize="11"
 							 FontWeight="SemiBold" VerticalAlignment="Center" />
-				  <TextBlock Text="{Binding SelectedVersion.BaseModelType}" FontSize="11"
-							 Foreground="#888888" VerticalAlignment="Center"
-							 IsVisible="{Binding SelectedVersion.BaseModelType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+				  <TextBlock Text="type:" FontSize="11" Foreground="#888888" VerticalAlignment="Center" />
+				  <TextBlock Text="{Binding SelectedVersion.BaseModelType, TargetNullValue='-'}" FontSize="11"
+							 Foreground="#888888" VerticalAlignment="Center" />
 				</StackPanel>
 
 				<!-- Tags (expandable) -->
